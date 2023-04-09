@@ -1,0 +1,36 @@
+POST http://localhost:5001/api/auth/register
+Content-Type: application/json
+
+{
+    "email": "mail@mail.com",
+    "username": "testuser",
+    "password": "admin"
+}
+
+####
+
+POST http://localhost:5001/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "password": "admin"
+}
+
+####
+
+POST http://localhost:5001/api/test
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGVzdHVzZXIiLCJqdGkiOiIxYmFiMDgxMi02YTk5LTQzMTYtYmE1My00ZWMwNDljMjkwYmMiLCJleHAiOjE2ODA0NTc3ODEsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTAwMCJ9.HEHmT8l_v-MiwwVDrIZFHNkuCOuSO4h5PHPVyxwy_tM
+
+{
+    "name": "Test"
+}
+
+####
+
+GET http://localhost:5001/api/test
+
+
+####
+
