@@ -17,6 +17,7 @@ namespace Server.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<TestObj>>> Get()
         {
             return await _context.Test.ToListAsync();

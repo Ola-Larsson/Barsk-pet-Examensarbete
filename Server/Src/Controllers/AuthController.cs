@@ -63,7 +63,7 @@ namespace Server.Controllers
         {
             var userExists = await _userManager.FindByNameAsync(model.Username);
             if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
+                throw new Exception($"User with username {model.Username} already exists!");
 
             IdentityUser user = new()
             {
@@ -76,7 +76,7 @@ namespace Server.Controllers
             if (!result.Succeeded)
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
 
-            return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+            return Ok();
         }
 
         [HttpGet("me")]
@@ -99,8 +99,7 @@ namespace Server.Controllers
                 issuer: _configuration["JWT:Issuer"],
                 expires: DateTime.Now.AddDays(1),
                 claims: authClaims,
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-                );
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
 
             return token;
         }
