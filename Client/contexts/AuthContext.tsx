@@ -1,79 +1,62 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { apiUrl } from "../helpers/http";
+import { useRouter, useSegments } from "expo-router";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { setAuthInStore } from "../helpers/secureStore";
+import { AuthUser, User } from "../interfaces/auth/types";
 
-export type AuthContextType = {
-  user: { username: string } | null;
-  signin: (username: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
-  signout: () => Promise<void>;
+type AuthContextType = {
+  signIn: (data: AuthUser) => void;
+  signOut: () => void;
+  auth: AuthUser | null;
 };
 
-const defaultValue: AuthContextType = {
-  user: null,
-  signin: (email: string, password: string) => {
-    throw new Error("Not implemented");
-  },
-  signup: (email: string, password: string) => {
-    throw new Error("Not implemented");
-  },
-  signout: () => {
-    throw new Error("Not implemented");
-  },
-};
+const AuthContext = createContext<AuthContextType>({
+  signIn: () => {},
+  signOut: () => {},
+  auth: null,
+});
 
-const authContext = createContext<AuthContextType | null>(defaultValue);
+export function useAuth() {
+  return useContext<AuthContextType>(AuthContext);
+}
+
+function useProtectedRoute(user: User | null) {
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    const inAuthGroup = segments[0] === "(auth)";
+    if (!user && !inAuthGroup) {
+      router.replace("/sign-in");
+    } else if (user && inAuthGroup) {
+      router.replace("/");
+    }
+  }, [user, segments]);
+}
 
 type Props = {
   children: React.ReactNode;
 };
 
-export function ProvideAuth({ children }: Props) {
-  const auth = useProvideAuth();
-  return <authContext.Provider value={auth}>{children}</authContext.Provider>;
-}
+export function AuthProvider({ children }: Props) {
+  const [auth, setAuth] = useState<AuthUser | null>(null);
 
-export const useAuth = () => {
-  return useContext(authContext);
-};
+  // useProtectedRoute(auth?.user || null);
 
-function useProvideAuth() {
-  const [user, setUser] = useState<{ username: string } | null>(null);
-
-  const signin = async (email: string, password: string) => {
-    const resp = await fetch(`${apiUrl}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: email,
-        password: password,
-      }),
-    });
-
-    if (resp.status === 200) {
-      const data = await resp.json();
-      console.log(data.user.username);
-      setUser(data.user);
-    }
-  };
-
-  const signup = async (email: string, password: string) => {
-    throw new Error("Not implemented");
-  };
-
-  const signout = async () => {
-    setUser(null);
-  };
-
-  useEffect(() => {
-    console.log(user);
-  }, []);
-
-  return {
-    user,
-    signin,
-    signup,
-    signout,
-  };
+  return (
+    <AuthContext.Provider
+      value={{
+        signIn: (data: AuthUser) => {
+          setAuth(data);
+          setAuthInStore(data);
+        },
+        signOut: () => {
+          setAuth(null);
+          setAuthInStore(null);
+        },
+        auth,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }

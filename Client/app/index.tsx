@@ -1,37 +1,42 @@
-import { Link, Stack } from "expo-router";
+import { Link } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useEffect } from "react";
 import { Button, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { apiUrl } from "../helpers/http";
+import { getAuthFromStore } from "../helpers/secureStore";
+import { useApi } from "./hooks/useApi";
 
 export default function Home() {
-  const [data, setData] = React.useState(null);
   const auth = useAuth();
+  const api = useApi("/test", false, auth.auth?.token);
 
-  const fetchData = async () => {
-    var resp = await fetch(`${apiUrl}/test`);
-    var data = await resp.json();
-    setData(data);
-  };
-
-  console.log(auth?.user);
+  useEffect(() => {
+    const getTokenAsync = async () => {
+      const token = await getAuthFromStore();
+      if (token) {
+        auth.signIn(token);
+      }
+    };
+    getTokenAsync();
+  }, []);
 
   return (
     <View style={styles.container}>
-      {auth?.user ? <Text>Logged in as {auth?.user?.username}</Text> : <Text>Not logged in</Text>}
-      <Text>Open up App.js to start working on your app!</Text>
-      <Text>{JSON.stringify(data)}</Text>
-      <Text>{apiUrl}</Text>
-      <Button title="Fetch" onPress={() => fetchData()} />
-
       <StatusBar style="auto" />
-      <Stack.Screen
-        options={{
-          headerRight: () => <Button onPress={() => auth?.signout()} title="Logout" color="#000" />,
-        }}
+      {auth?.auth?.user ? (
+        <Text>Logged in as {auth?.auth.user?.username}</Text>
+      ) : (
+        <Text>Not logged in</Text>
+      )}
+      <Text>Open up App.js to start working on your app!</Text>
+      <Text>{api.value ? api.value[0].name : ""}</Text>
+      <Text>{apiUrl}</Text>
+      <Button
+        title={api.status == "pending" ? "Fetching..." : "Fetch"}
+        onPress={() => api.execute()}
       />
-
+      {api.error && <Text>{api.error.toString()}</Text>}
       <Link href="/Details">Go to Details</Link>
       <Link href="/Login">Go to Login</Link>
     </View>

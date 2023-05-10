@@ -1,39 +1,31 @@
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { ProvideAuth } from "../contexts/AuthContext";
+import UserButton from "../components/header/user-button";
+import Tabs from "../components/tabs";
+import { AuthProvider } from "../contexts/AuthContext";
+
 export const unstable_settings = {
-  initialRouteName: "index",
-  screens: {
-    index: {
-      path: "/",
-      title: "Home",
-    },
-    details: {
-      path: "/details",
-      title: "Details",
-    },
-    login: {
-      path: "/login",
-      title: "Login",
-    },
-  },
+  inititalRouteName: "index",
 };
 
 export default function Layout() {
   return (
-    <ProvideAuth>
+    <AuthProvider>
       <Stack
-        initialRouteName="home"
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#f4511e",
+            backgroundColor: "#2b2b2b",
           },
           headerTintColor: "#fff",
           headerTitleStyle: {
             fontWeight: "bold",
           },
+          headerRight: () => <UserButton />,
         }}
       />
-    </ProvideAuth>
+      <StatusBar style="light" />
+      <Tabs />
+    </AuthProvider>
   );
 }
