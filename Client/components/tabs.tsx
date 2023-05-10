@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Pressable, View } from "react-native";
-import { Text } from "react-native-paper";
+import { View } from "react-native";
+import { IconButton } from "react-native-paper";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Tabs() {
@@ -9,16 +9,26 @@ export default function Tabs() {
   const auth = useAuth();
 
   return (
-    <View>
-      <Pressable onPress={() => router.push("/")}>
-        <Text>Tab 1</Text>
-      </Pressable>
-      <Pressable onPress={() => router.push("/search")}>
-        <Text>Tab 2</Text>
-      </Pressable>
-      <Pressable onPress={() => router.push("/settings")}>
-        <Text>Tab 3</Text>
-      </Pressable>
+    <View
+      style={{
+        backgroundColor: "#2b2b2b",
+        flexDirection: "row",
+        justifyContent: "space-around",
+      }}
+    >
+      <IconButton icon="home" size={25} iconColor="#aaa" onPress={() => router.push("/")} />
+      <IconButton
+        icon="magnify"
+        size={25}
+        iconColor="#aaa"
+        onPress={() => router.push("/search")}
+      />
+      <IconButton
+        icon="account"
+        size={25}
+        iconColor="#aaa"
+        onPress={() => router.push("/my-account")}
+      />
     </View>
   );
 }
