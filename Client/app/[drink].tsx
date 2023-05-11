@@ -1,13 +1,14 @@
-import { Stack, usePathname, useRouter } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { RefreshControl, ScrollView, View } from "react-native";
 import { Card, Text } from "react-native-paper";
-import { drinks } from "./index";
+import { useAuth } from "../contexts/AuthContext";
+import { useApi } from "./hooks/useApi";
 
 export default function Details() {
-  const router = useRouter();
-  const pathName = usePathname();
-  const drink = drinks.find((drink) => drink.id === pathName.split("/")[1]);
+  const pathName = usePathname().split("/")[1];
+  const auth = useAuth();
+  const api = useApi("/drinks/" + pathName, true, auth.auth?.token);
 
   return (
     <View
@@ -18,12 +19,23 @@ export default function Details() {
         height: "100%",
       }}
     >
-      <Stack.Screen options={{ title: drink?.name }} />
+      <Stack.Screen options={{ title: api.value?.name }} />
       <ScrollView
         style={{
           flex: 1,
           width: "100%",
         }}
+        refreshControl={
+          <RefreshControl
+            refreshing={api.status == "pending"}
+            style={{ backgroundColor: "#1b1c1d" }}
+            colors={["#f8c700", "#f8c700", "#f8c700"]}
+            progressBackgroundColor={"#2b2b2b"}
+            onRefresh={() => {
+              api.execute();
+            }}
+          />
+        }
       >
         <Card
           style={{
@@ -34,7 +46,7 @@ export default function Details() {
           }}
         >
           <Card.Cover
-            source={{ uri: drink?.image }}
+            source={{ uri: api.value?.imageUrl }}
             style={{
               width: "100%",
               height: 300,
@@ -47,6 +59,7 @@ export default function Details() {
           style={{
             flexDirection: "row",
             paddingHorizontal: 10,
+            justifyContent: "space-between",
           }}
         >
           <Text
@@ -57,7 +70,7 @@ export default function Details() {
               marginRight: 2,
             }}
           >
-            {drink?.name}
+            {api.value?.name}
           </Text>
           <Text
             style={{
@@ -65,7 +78,7 @@ export default function Details() {
               fontSize: 24,
             }}
           >
-            RATING HERE
+            Rating: {api.value?.rating} / 5
           </Text>
         </View>
         <View
@@ -79,7 +92,7 @@ export default function Details() {
               fontSize: 16,
             }}
           >
-            {drink?.description}
+            {api.value?.description}
           </Text>
           <Text
             style={{
@@ -91,15 +104,15 @@ export default function Details() {
           >
             Ingredients
           </Text>
-          {drink?.ingredients.map((ingredient) => (
+          {api.value?.ingredients?.map((ingredient: { name: string; amount: string }) => (
             <Text
-              key={ingredient}
+              key={ingredient.name}
               style={{
                 color: "#aaa",
                 fontSize: 16,
               }}
             >
-              {ingredient}
+              {ingredient.name} - {ingredient.amount}
             </Text>
           ))}
           <Text
@@ -118,7 +131,7 @@ export default function Details() {
               fontSize: 16,
             }}
           >
-            {drink?.instructions}
+            {api.value?.instructions}
           </Text>
         </View>
       </ScrollView>
