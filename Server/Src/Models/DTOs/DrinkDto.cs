@@ -13,4 +13,7 @@ public class DrinkDto
     public DateTime Created { get; set; }
     public double Rating { get; set; }
     public int RatingCount { get; set; }
+    public bool IsFavorite { get; set; }
+    public int? CurrentUserRating { get; set; }
+    public int IsOwned { get; set; }
 }

@@ -1,7 +1,7 @@
 import { Stack, usePathname } from "expo-router";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
-import { Card, Text } from "react-native-paper";
+import { Card, IconButton, Text } from "react-native-paper";
 import { useAuth } from "../contexts/AuthContext";
 import { useApi } from "./hooks/useApi";
 
@@ -9,6 +9,22 @@ export default function Details() {
   const pathName = usePathname().split("/")[1];
   const auth = useAuth();
   const api = useApi("/drinks/" + pathName, true, auth.auth?.token);
+  const favoriteApi = useApi("/favorites/" + pathName, false, auth.auth?.token);
+  const ratingApi = useApi("/ratings/" + pathName, false, auth.auth?.token);
+
+  React.useEffect(() => {
+    if (favoriteApi.status == "success") {
+      api.execute();
+    }
+  }, [favoriteApi.status]);
+
+  React.useEffect(() => {
+    if (ratingApi.status == "success") {
+      api.execute();
+    }
+  }, [ratingApi.status]);
+
+  console.log(api.value);
 
   return (
     <View
@@ -53,6 +69,20 @@ export default function Details() {
               backgroundColor: "transparent",
             }}
             borderRadius={0}
+          />
+          <IconButton
+            icon={api.value?.isFavorite ? "heart" : "heart-outline"}
+            iconColor={api.value?.isFavorite ? "#f8c700" : "#fff"}
+            size={30}
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              backgroundColor: "transparent",
+            }}
+            onPress={() => {
+              api.value?.isFavorite ? favoriteApi.execute("DELETE") : favoriteApi.execute("POST");
+            }}
           />
         </Card>
         <View

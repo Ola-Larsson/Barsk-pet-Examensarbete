@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.Models;
@@ -8,22 +9,30 @@ public class DrinksService
 {
     private readonly DatabaseContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public DrinksService(DatabaseContext context, IHttpContextAccessor httpContextAccessor)
+    public DrinksService(DatabaseContext context,
+        IHttpContextAccessor httpContextAccessor,
+        UserManager<ApplicationUser> userManager)
     {
         _context = context;
         _httpContextAccessor = httpContextAccessor;
+        _userManager = userManager;
     }
 
     public async Task<IEnumerable<DrinkDto>> Get()
     {
         var drinks = await _context.Drinks
             .Include(d => d.User)
+                .ThenInclude(u => u.Favorites)
             .Include(d => d.Ratings)
             .Include(d => d.Tags)
+            .Include(d => d.User)
             .Include(d => d.Ingredients)
                 .ThenInclude(i => i.Ingredient)
             .ToListAsync();
+
+        var currentUser = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
 
         var drinksDto = drinks.Select(x => new DrinkDto
         {
@@ -41,9 +50,12 @@ public class DrinksService
             {
                 Name = t.Name
             }).ToList(),
-            User = x.User.UserName,
+            User = x.User?.UserName ?? "",
             Rating = x.AverageRating,
-            RatingCount = x.RatingCount
+            RatingCount = x.RatingCount,
+            IsFavorite = currentUser?.Favorites.Any(f => f.Id == x.Id) ?? false,
+            IsOwned = x.User?.UserName == currentUser?.UserName ? 1 : 0,
+            CurrentUserRating = x.Ratings.FirstOrDefault(r => r.UserId == currentUser?.Id)?.Value ?? null
         });
 
         return drinksDto;
@@ -53,6 +65,7 @@ public class DrinksService
     {
         var drink = await _context.Drinks
             .Include(d => d.User)
+                .ThenInclude(u => u.Favorites)
             .Include(d => d.Ratings)
             .Include(d => d.Tags)
             .Include(d => d.Ingredients)
@@ -63,6 +76,8 @@ public class DrinksService
         {
             return null;
         }
+
+        var currentUser = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
 
         var drinkDto = new DrinkDto
         {
@@ -80,9 +95,12 @@ public class DrinksService
             {
                 Name = t.Name
             }).ToList(),
-            User = drink.User.UserName,
+            User = drink.User?.UserName ?? "",
             Rating = drink.AverageRating,
-            RatingCount = drink.RatingCount
+            RatingCount = drink.RatingCount,
+            IsFavorite = currentUser?.Favorites.Any(f => f.DrinkId == drink.Id) ?? false,
+            CurrentUserRating = drink.Ratings.FirstOrDefault(r => r.UserId == currentUser?.Id)?.Value ?? null,
+            IsOwned = drink.User.UserName == currentUser?.UserName ? 1 : 0,
         };
 
         return drinkDto;
