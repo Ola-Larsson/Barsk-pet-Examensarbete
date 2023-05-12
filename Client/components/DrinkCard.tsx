@@ -1,13 +1,14 @@
-import { useRouter, useSegments } from "expo-router";
+import { useRouter } from "expo-router";
 import { Card, Surface, Text } from "react-native-paper";
 
 type Props = {
   drink: {
     id: string;
     name: string;
-    image: string;
+    imageUrl: string;
     description: string;
-    ingredients: string[];
+    ingredients: { name: string; amount: string }[];
+    tags: { name: string }[];
     instructions: string;
   };
 };
@@ -36,7 +37,7 @@ export default function DrinkCard({ drink }: Props) {
         }}
       >
         <Card.Cover
-          source={{ uri: drink.image }}
+          source={{ uri: drink.imageUrl }}
           style={{
             width: 120,
             height: 120,
@@ -60,7 +61,7 @@ export default function DrinkCard({ drink }: Props) {
         numberOfLines={1}
         ellipsizeMode="tail"
       >
-        {drink.ingredients.join(", ")}
+        {drink.tags.map((tag) => tag.name).join(", ")}
       </Text>
     </Surface>
   );
