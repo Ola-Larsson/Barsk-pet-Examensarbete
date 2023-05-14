@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import UserButton from "../components/header/user-button";
-import Tabs from "../components/tabs";
+import Tabs from "../components/Tabs";
 import { AuthProvider } from "../contexts/AuthContext";
 
 export const unstable_settings = {

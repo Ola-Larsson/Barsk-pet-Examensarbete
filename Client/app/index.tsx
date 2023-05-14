@@ -77,6 +77,11 @@ export default function Home() {
     const getTokenAsync = async () => {
       const token = await getAuthFromStore();
       if (token) {
+        if (new Date(token.expiration).getTime() < Date.now()) {
+          auth.signOut();
+          return;
+        }
+
         auth.signIn(token);
       }
     };

@@ -33,6 +33,9 @@ public class DrinksService
             .ToListAsync();
 
         var currentUser = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
+        List<Favorite> favorites;
+        if (currentUser != null) favorites = _context.Favorites.Where(f => f.UserId == currentUser.Id).ToList();
+        else favorites = new List<Favorite>();
 
         var drinksDto = drinks.Select(x => new DrinkDto
         {
@@ -53,9 +56,52 @@ public class DrinksService
             User = x.User?.UserName ?? "",
             Rating = x.AverageRating,
             RatingCount = x.RatingCount,
-            IsFavorite = currentUser?.Favorites.Any(f => f.Id == x.Id) ?? false,
-            IsOwned = x.User?.UserName == currentUser?.UserName ? 1 : 0,
+            IsFavorite = favorites.Any(f => f.DrinkId == x.Id),
+            IsOwned = x.User?.UserName == currentUser?.UserName ? true : false,
             CurrentUserRating = x.Ratings.FirstOrDefault(r => r.UserId == currentUser?.Id)?.Value ?? null
+        });
+
+        return drinksDto;
+    }
+
+    public async Task<IEnumerable<DrinkDto>> Get(ApplicationUser user)
+    {
+        var drinks = await _context.Drinks
+            .Include(d => d.User)
+                .ThenInclude(u => u.Favorites)
+            .Include(d => d.Ratings)
+            .Include(d => d.Tags)
+            .Include(d => d.Ingredients)
+                .ThenInclude(i => i.Ingredient)
+            .Where(d => d.User.UserName == user.UserName)
+            .ToListAsync();
+
+        List<Favorite> favorites;
+        if (user != null) favorites = _context.Favorites.Where(f => f.UserId == user.Id).ToList();
+        else favorites = new List<Favorite>();
+
+        var drinksDto = drinks.Select(x => new DrinkDto
+        {
+            Id = x.Id,
+            Name = x.Name,
+            Description = x.Description,
+            ImageUrl = x.Image,
+            Instructions = x.Instructions,
+            Ingredients = x.Ingredients.Select(i => new DrinkIngredientDto
+            {
+                Name = i.Ingredient.Name,
+                Amount = i.Amount,
+            }).ToList(),
+            Tags = x.Tags.Select(t => new TagDto
+            {
+                Name = t.Name
+            }).ToList(),
+            User = x.User?.UserName ?? "",
+            Rating = x.AverageRating,
+            RatingCount = x.RatingCount,
+            IsFavorite = favorites.Any(f => f.DrinkId == x.Id),
+            IsOwned = x.User?.UserName == user?.UserName ? true : false,
+            CurrentUserRating = x.Ratings.FirstOrDefault(r => r.UserId == user?.Id)?.Value ?? null
         });
 
         return drinksDto;
@@ -78,6 +124,9 @@ public class DrinksService
         }
 
         var currentUser = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
+        List<Favorite> favorites;
+        if (currentUser != null) favorites = _context.Favorites.Where(f => f.UserId == currentUser.Id).ToList();
+        else favorites = new List<Favorite>();
 
         var drinkDto = new DrinkDto
         {
@@ -98,9 +147,9 @@ public class DrinksService
             User = drink.User?.UserName ?? "",
             Rating = drink.AverageRating,
             RatingCount = drink.RatingCount,
-            IsFavorite = currentUser?.Favorites.Any(f => f.DrinkId == drink.Id) ?? false,
+            IsFavorite = favorites.Any(f => f.DrinkId == drink.Id) ? true : false,
             CurrentUserRating = drink.Ratings.FirstOrDefault(r => r.UserId == currentUser?.Id)?.Value ?? null,
-            IsOwned = drink.User.UserName == currentUser?.UserName ? 1 : 0,
+            IsOwned = drink.User.UserName == currentUser?.UserName ? true : false,
         };
 
         return drinkDto;

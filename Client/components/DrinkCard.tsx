@@ -23,6 +23,7 @@ export default function DrinkCard({ drink }: Props) {
         borderRadius: 10,
         width: 120,
         marginRight: 10,
+        height: 160,
       }}
     >
       <Card
