@@ -10,10 +10,10 @@ public class DrinkDto
     public List<DrinkIngredientDto> Ingredients { get; set; } = new();
     public List<TagDto> Tags { get; set; } = new();
     public string User { get; set; }
-    public DateTime Created { get; set; }
-    public double Rating { get; set; }
-    public int RatingCount { get; set; }
-    public bool IsFavorite { get; set; }
+    public DateTime? Created { get; set; }
+    public double? Rating { get; set; }
+    public int? RatingCount { get; set; }
+    public bool? IsFavorite { get; set; }
     public int? CurrentUserRating { get; set; }
-    public bool IsOwned { get; set; }
+    public bool? IsOwned { get; set; }
 }

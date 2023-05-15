@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Src.Migrations
 {
     /// <inheritdoc />
-    public partial class initialCreate : Migration
+    public partial class initialMigrate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -51,7 +51,7 @@ namespace Src.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Ingredients",
+                name: "Ingredient",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -60,7 +60,19 @@ namespace Src.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Ingredients", x => x.Id);
+                    table.PrimaryKey("PK_Ingredient", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Media",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    Data = table.Column<byte[]>(type: "BLOB", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Media", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -204,33 +216,6 @@ namespace Src.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DrinkIngredient",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    DrinkId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    IngredientId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Amount = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DrinkIngredient", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DrinkIngredient_Drinks_DrinkId",
-                        column: x => x.DrinkId,
-                        principalTable: "Drinks",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_DrinkIngredient_Ingredients_IngredientId",
-                        column: x => x.IngredientId,
-                        principalTable: "Ingredients",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Favorites",
                 columns: table => new
                 {
@@ -253,6 +238,32 @@ namespace Src.Migrations
                         principalTable: "Drinks",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Ingredients",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    IngredientId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    Amount = table.Column<string>(type: "TEXT", nullable: true),
+                    DrinkId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ingredients", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Ingredients_Drinks_DrinkId",
+                        column: x => x.DrinkId,
+                        principalTable: "Drinks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Ingredients_Ingredient_IngredientId",
+                        column: x => x.IngredientId,
+                        principalTable: "Ingredient",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -287,7 +298,7 @@ namespace Src.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
-                    DrinkId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    DrinkId = table.Column<Guid>(type: "TEXT", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -297,7 +308,8 @@ namespace Src.Migrations
                         name: "FK_Tags_Drinks_DrinkId",
                         column: x => x.DrinkId,
                         principalTable: "Drinks",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -338,16 +350,6 @@ namespace Src.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DrinkIngredient_DrinkId",
-                table: "DrinkIngredient",
-                column: "DrinkId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DrinkIngredient_IngredientId",
-                table: "DrinkIngredient",
-                column: "IngredientId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Drinks_UserId",
                 table: "Drinks",
                 column: "UserId");
@@ -361,6 +363,16 @@ namespace Src.Migrations
                 name: "IX_Favorites_UserId",
                 table: "Favorites",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ingredients_DrinkId",
+                table: "Ingredients",
+                column: "DrinkId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ingredients_IngredientId",
+                table: "Ingredients",
+                column: "IngredientId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Ratings_DrinkId",
@@ -397,10 +409,13 @@ namespace Src.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "DrinkIngredient");
+                name: "Favorites");
 
             migrationBuilder.DropTable(
-                name: "Favorites");
+                name: "Ingredients");
+
+            migrationBuilder.DropTable(
+                name: "Media");
 
             migrationBuilder.DropTable(
                 name: "Ratings");
@@ -415,7 +430,7 @@ namespace Src.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Ingredients");
+                name: "Ingredient");
 
             migrationBuilder.DropTable(
                 name: "Drinks");

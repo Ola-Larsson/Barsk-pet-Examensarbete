@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Server.Models;
@@ -12,8 +13,14 @@ public class DatabaseContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<TestObj> Test { get; set; }
     public DbSet<Drink> Drinks { get; set; }
-    public DbSet<Ingredient> Ingredients { get; set; }
+    public DbSet<DrinkIngredient> Ingredients { get; set; }
     public DbSet<Rating> Ratings { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<Favorite> Favorites { get; set; }
+    public DbSet<Media> Media { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+    }
 }
