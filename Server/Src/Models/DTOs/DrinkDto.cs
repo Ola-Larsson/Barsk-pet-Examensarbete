@@ -15,5 +15,5 @@ public class DrinkDto
     public int RatingCount { get; set; }
     public bool IsFavorite { get; set; }
     public int? CurrentUserRating { get; set; }
-    public int IsOwned { get; set; }
+    public bool IsOwned { get; set; }
 }

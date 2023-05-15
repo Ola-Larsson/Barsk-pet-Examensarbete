@@ -16,7 +16,7 @@ export default function Tabs() {
         justifyContent: "space-around",
       }}
     >
-      <IconButton icon="home" size={25} iconColor="#aaa" onPress={() => router.push("/")} />
+      <IconButton icon="home" size={25} iconColor="#f8c700" onPress={() => router.push("/")} />
       <IconButton
         icon="magnify"
         size={25}
@@ -27,7 +27,7 @@ export default function Tabs() {
         icon="account"
         size={25}
         iconColor="#aaa"
-        onPress={() => router.push("/my-account")}
+        onPress={() => router.push("/my-page")}
       />
     </View>
   );

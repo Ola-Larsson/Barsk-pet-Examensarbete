@@ -46,7 +46,7 @@ export function AuthProvider({ children }: Props) {
     <AuthContext.Provider
       value={{
         signIn: (data: AuthUser) => {
-          setAuth(data);
+          if (data.expiration) setAuth(data);
           setAuthInStore(data);
         },
         signOut: () => {

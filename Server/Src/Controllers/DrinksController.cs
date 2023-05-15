@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using Server.Services;
@@ -10,10 +11,12 @@ namespace Server.Controllers;
 public class DrinksController : ControllerBase
 {
     private readonly DrinksService _drinksService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public DrinksController(DrinksService drinksService)
+    public DrinksController(DrinksService drinksService, UserManager<ApplicationUser> userManager)
     {
         _drinksService = drinksService;
+        _userManager = userManager;
     }
 
     [HttpGet]

@@ -24,8 +24,6 @@ export default function Details() {
     }
   }, [ratingApi.status]);
 
-  console.log(api.value);
-
   return (
     <View
       style={{
@@ -72,7 +70,7 @@ export default function Details() {
           />
           <IconButton
             icon={api.value?.isFavorite ? "heart" : "heart-outline"}
-            iconColor={api.value?.isFavorite ? "#f8c700" : "#fff"}
+            iconColor={api.value?.isFavorite ? "#f8c700" : "#f8c700"}
             size={30}
             style={{
               position: "absolute",
@@ -98,6 +96,7 @@ export default function Details() {
               fontSize: 24,
               fontWeight: "bold",
               marginRight: 2,
+              marginBottom: 0,
             }}
           >
             {api.value?.name}
@@ -106,11 +105,32 @@ export default function Details() {
             style={{
               color: "#aaa",
               fontSize: 24,
+              marginBottom: 0,
             }}
           >
             Rating: {api.value?.rating} / 5
           </Text>
         </View>
+        <Text
+          style={{
+            color: "#aaa",
+            fontSize: 16,
+            fontWeight: "bold",
+            marginBottom: 15,
+            paddingHorizontal: 10,
+          }}
+        >
+          By{" "}
+          <Text
+            style={{
+              color: "#f8c700",
+              fontSize: 16,
+              fontWeight: "bold",
+            }}
+          >
+            {api.value?.user}
+          </Text>
+        </Text>
         <View
           style={{
             paddingHorizontal: 10,
