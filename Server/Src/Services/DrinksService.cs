@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Server.Data;
 using Server.Models;
 
@@ -10,14 +11,17 @@ public class DrinksService
     private readonly DatabaseContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly MediaService _mediaService;
 
     public DrinksService(DatabaseContext context,
         IHttpContextAccessor httpContextAccessor,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        MediaService mediaService)
     {
         _context = context;
         _httpContextAccessor = httpContextAccessor;
         _userManager = userManager;
+        _mediaService = mediaService;
     }
 
     public async Task<IEnumerable<DrinkDto>> Get()
@@ -155,20 +159,66 @@ public class DrinksService
         return drinkDto;
     }
 
-    public async Task<Drink> Post(Drink drink)
+    public async Task<Drink> Post(CreateDrinkRequest drinkDto)
     {
+        var imgUrl = await _mediaService.Save(drinkDto.Image);
+
+        var drink = new Drink
+        {
+            Name = drinkDto.Name,
+            Description = drinkDto.Description,
+            Image = imgUrl,
+            Instructions = drinkDto.Instructions,
+            Tags = drinkDto.Tags.Select(t => new Tag
+            {
+                Name = t.Name
+            }).ToList(),
+            Ingredients = drinkDto.Ingredients.Select(i => new DrinkIngredient
+            {
+                Ingredient = new Ingredient
+                {
+                    Name = i.Name
+                },
+                Amount = i.Amount
+            }).ToList(),
+            User = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name)
+        };
+
         _context.Drinks.Add(drink);
         await _context.SaveChangesAsync();
 
         return drink;
     }
 
-    public async Task Put(string id, Drink drink)
+    public async Task Put(string id, DrinkDto drinkDto)
     {
-        if (id != drink.Id.ToString())
+        if (id != drinkDto.Id.ToString())
         {
             return;
         }
+
+        var drink = await _context.Drinks.FindAsync(Guid.Parse(id));
+        if (drink == null)
+        {
+            return;
+        }
+
+        drink.Name = drinkDto.Name;
+        drink.Description = drinkDto.Description;
+        drink.Image = drinkDto.ImageUrl;
+        drink.Instructions = drinkDto.Instructions;
+        drink.Tags = drinkDto.Tags.Select(t => new Tag
+        {
+            Name = t.Name
+        }).ToList();
+        drink.Ingredients = drinkDto.Ingredients.Select(i => new DrinkIngredient
+        {
+            Ingredient = new Ingredient
+            {
+                Name = i.Name
+            },
+            Amount = i.Amount
+        }).ToList();
 
         _context.Entry(drink).State = EntityState.Modified;
         await _context.SaveChangesAsync();
@@ -178,15 +228,15 @@ public class DrinksService
 
     public async Task Delete(string id)
     {
-        var drink = await _context.Drinks.FindAsync(id);
+        var drink = await _context.Drinks.Where(d => d.Id == Guid.Parse(id))
+            .AsNoTracking().FirstOrDefaultAsync();
         if (drink == null)
         {
             return;
         }
 
-        _context.Drinks.Remove(drink);
+        // should only delete drink row and nothing else
+        _context.Drinks.Remove(drink).State = EntityState.Deleted;
         await _context.SaveChangesAsync();
-
-        return;
     }
 }

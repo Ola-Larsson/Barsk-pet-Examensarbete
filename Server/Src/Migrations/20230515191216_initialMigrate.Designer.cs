@@ -11,8 +11,8 @@ using Server.Data;
 namespace Src.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20230511205549_initialCreate")]
-    partial class initialCreate
+    [Migration("20230515191216_initialMigrate")]
+    partial class initialMigrate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -272,7 +272,7 @@ namespace Src.Migrations
                     b.Property<Guid>("DrinkId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("IngredientId")
+                    b.Property<Guid?>("IngredientId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -281,7 +281,7 @@ namespace Src.Migrations
 
                     b.HasIndex("IngredientId");
 
-                    b.ToTable("DrinkIngredient");
+                    b.ToTable("Ingredients");
                 });
 
             modelBuilder.Entity("Server.Models.Favorite", b =>
@@ -322,7 +322,20 @@ namespace Src.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Ingredients");
+                    b.ToTable("Ingredient");
+                });
+
+            modelBuilder.Entity("Server.Models.Media", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("Data")
+                        .HasColumnType("BLOB");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Media");
                 });
 
             modelBuilder.Entity("Server.Models.Rating", b =>
@@ -361,7 +374,7 @@ namespace Src.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("DrinkId")
+                    b.Property<Guid>("DrinkId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -444,9 +457,7 @@ namespace Src.Migrations
 
                     b.HasOne("Server.Models.Ingredient", "Ingredient")
                         .WithMany()
-                        .HasForeignKey("IngredientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("IngredientId");
 
                     b.Navigation("Ingredient");
                 });
@@ -489,7 +500,9 @@ namespace Src.Migrations
                 {
                     b.HasOne("Server.Models.Drink", null)
                         .WithMany("Tags")
-                        .HasForeignKey("DrinkId");
+                        .HasForeignKey("DrinkId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Server.Models.ApplicationUser", b =>

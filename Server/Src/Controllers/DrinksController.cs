@@ -12,11 +12,13 @@ public class DrinksController : ControllerBase
 {
     private readonly DrinksService _drinksService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly MediaService _mediaService;
 
-    public DrinksController(DrinksService drinksService, UserManager<ApplicationUser> userManager)
+    public DrinksController(DrinksService drinksService, UserManager<ApplicationUser> userManager, MediaService mediaService)
     {
         _drinksService = drinksService;
         _userManager = userManager;
+        _mediaService = mediaService;
     }
 
     [HttpGet]
@@ -48,30 +50,43 @@ public class DrinksController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<Drink>> Post(Drink drink)
+    public async Task<ActionResult<Drink>> Post(CreateDrinkRequest drink)
     {
-        await _drinksService.Post(drink);
+        var user = await _userManager.FindByNameAsync(User.Identity.Name);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
 
-        return CreatedAtAction(nameof(Get), new { id = drink.Id }, drink);
+        var created = await _drinksService.Post(drink);
+
+        return CreatedAtAction(nameof(Get), new { id = created.Id }, drink);
     }
 
     [HttpPut("{id}")]
     [Authorize]
-    public async Task<IActionResult> Put(string id, Drink drink)
+    public async Task<IActionResult> Put(string id, DrinkDto drinkDto)
     {
-        if (id != drink.Id.ToString())
+        if (id != drinkDto.Id.ToString())
         {
             return BadRequest();
         }
 
-        await _drinksService.Put(id, drink);
+        var drink = await _drinksService.Get(id);
+
+        if (drink == null)
+        {
+            return NotFound();
+        }
+
+        await _drinksService.Put(id, drinkDto);
 
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete]
     [Authorize]
-    public async Task<IActionResult> Delete(string id)
+    public async Task<IActionResult> Delete([FromBody] string id)
     {
         await _drinksService.Delete(id);
 

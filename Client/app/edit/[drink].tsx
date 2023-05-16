@@ -1,4 +1,4 @@
-import { Stack, usePathname } from "expo-router";
+import { Stack, usePathname, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { Button, Card, IconButton, Text, TextInput } from "react-native-paper";
@@ -11,16 +11,27 @@ export default function EditDrink() {
 
   const pathName = usePathname();
   const auth = useAuth();
+  const router = useRouter();
   const drinkId = pathName.split("/")[2];
 
   const drinkFetch = useApi("/drinks/" + drinkId, true, auth.auth?.token);
   const editApi = useApi("/drinks/" + drinkId, false, auth.auth?.token);
+
+  const save = () => {
+    editApi.execute("PUT", editForm);
+  };
 
   useEffect(() => {
     if (drinkFetch.status == "success") {
       setEditForm(drinkFetch.value);
     }
   }, [drinkFetch.status, drinkFetch.value]);
+
+  useEffect(() => {
+    if (editApi.status == "success") {
+      router.push("/" + drinkId);
+    }
+  }, [editApi.status]);
 
   return (
     <View
@@ -404,6 +415,9 @@ export default function EditDrink() {
               borderRadius: 5,
               width: "48%",
             }}
+            onPress={() => {
+              save();
+            }}
           >
             Save
           </Button>
@@ -413,6 +427,9 @@ export default function EditDrink() {
               backgroundColor: "#f8c700",
               borderRadius: 5,
               width: "48%",
+            }}
+            onPress={() => {
+              router.back();
             }}
           >
             Cancel

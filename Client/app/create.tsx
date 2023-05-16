@@ -1,37 +1,108 @@
-import { Stack, usePathname } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
+import { Stack, usePathname, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Button, Card, IconButton, Text, TextInput } from "react-native-paper";
+import * as yup from "yup";
 import { useAuth } from "../contexts/AuthContext";
-import { Drink } from "../interfaces/auth/types";
+import { CreateDrinkRequest } from "../interfaces/auth/types";
 import { useApi } from "./hooks/useApi";
 
-export default function EditDrink() {
-  const [editForm, setEditForm] = useState<Drink>({
-    id: "",
+export default function CreateDrink() {
+  const [editForm, setEditForm] = useState<CreateDrinkRequest>({
     name: "",
     description: "",
+    instructions: "",
     ingredients: [
       {
         name: "",
         amount: "",
       },
     ],
-    instructions: "",
-    imageUrl: "",
     tags: [
       {
         name: "",
       },
     ],
-    created: "",
+    image: "",
+  });
+  const [img, setImg] = useState<any>(null);
+
+  const [errors, setErrors] = useState<any>({
+    name: "",
+    description: "",
+    instructions: "",
+    image: "",
+    ingredients: [
+      {
+        name: "",
+        amount: "",
+      },
+    ],
+    tags: [
+      {
+        name: "",
+      },
+    ],
   });
 
+  const router = useRouter();
   const pathName = usePathname();
   const auth = useAuth();
-  const drinkId = pathName.split("/")[2];
 
-  const api = useApi("/drinks/" + drinkId, false, auth.auth?.token);
+  const api = useApi("/drinks", false, auth.auth?.token);
+
+  const schema = yup.object().shape({
+    name: yup.string().required("Name is required"),
+    description: yup.string().required("Description is required"),
+    instructions: yup.string().required("Instructions are required"),
+    imageUrl: yup.string().optional(),
+    ingredients: yup.array().of(
+      yup.object().shape({
+        name: yup.string().required("Required"),
+        amount: yup.string().required("Required"),
+      })
+    ),
+    tags: yup.array().of(
+      yup.object().shape({
+        name: yup.string().required("Tag name is required"),
+      })
+    ),
+  });
+
+  const handleSubmit = async () => {
+    try {
+      await schema.validate(editForm, { abortEarly: false });
+      setErrors({});
+      api.execute("POST", editForm);
+    } catch (err) {
+      if (err instanceof yup.ValidationError) {
+        let newErrors: any = {};
+        err.inner.forEach((error) => {
+          error.path && (newErrors[error.path] = error.message);
+        });
+        setErrors(newErrors);
+      }
+    }
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: true,
+      allowsEditing: true,
+      allowsMultipleSelection: false,
+      aspect: [4, 4],
+      quality: 1,
+    });
+
+    if (result.canceled) return;
+
+    if (!result.canceled) {
+      setImg(result.assets[0].uri);
+      setEditForm({ ...editForm, image: result.assets[0].base64 });
+    }
+  };
 
   return (
     <View
@@ -60,7 +131,7 @@ export default function EditDrink() {
               }}
             >
               <Card.Cover
-                source={editForm?.imageUrl ? { uri: editForm?.imageUrl } : {}}
+                source={img ? { uri: img } : {}}
                 style={{
                   width: "100%",
                   height: 300,
@@ -77,24 +148,55 @@ export default function EditDrink() {
                   right: 0,
                   borderRadius: 0,
                 }}
+                onPress={() => pickImage()}
               />
             </Card>
+            {errors?.imageUrl && (
+              <Text
+                style={{
+                  color: "red",
+                  fontSize: 15,
+                  paddingLeft: 15,
+                  fontWeight: "bold",
+                }}
+              >
+                *{errors?.imageUrl}
+              </Text>
+            )}
             <View
               style={{
                 width: "100%",
                 padding: 10,
               }}
             >
-              <Text
+              <View
                 style={{
-                  color: "#f8c700",
-                  fontSize: 15,
-                  paddingLeft: 15,
-                  fontWeight: "bold",
+                  flexDirection: "row",
                 }}
               >
-                Drink Name
-              </Text>
+                <Text
+                  style={{
+                    color: "#f8c700",
+                    fontSize: 15,
+                    paddingLeft: 15,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Drink Namexd
+                </Text>
+                {errors?.name && (
+                  <Text
+                    style={{
+                      color: "red",
+                      fontSize: 15,
+                      paddingLeft: 15,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    *{errors?.name}
+                  </Text>
+                )}
+              </View>
               <TextInput
                 selectionColor="#aaa"
                 style={{
@@ -114,16 +216,34 @@ export default function EditDrink() {
                   setEditForm({ ...editForm, name: text });
                 }}
               />
-              <Text
+              <View
                 style={{
-                  color: "#f8c700",
-                  fontSize: 15,
-                  paddingLeft: 15,
-                  fontWeight: "bold",
+                  flexDirection: "row",
                 }}
               >
-                Description
-              </Text>
+                <Text
+                  style={{
+                    color: "#f8c700",
+                    fontSize: 15,
+                    paddingLeft: 15,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Description
+                </Text>
+                {errors?.description && (
+                  <Text
+                    style={{
+                      color: "red",
+                      fontSize: 15,
+                      paddingLeft: 15,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    *{errors?.description}
+                  </Text>
+                )}
+              </View>
               <TextInput
                 selectionColor="#aaa"
                 style={{
@@ -144,16 +264,22 @@ export default function EditDrink() {
                   setEditForm({ ...editForm, description: text });
                 }}
               />
-              <Text
+              <View
                 style={{
-                  color: "#f8c700",
-                  fontSize: 15,
-                  paddingLeft: 15,
-                  fontWeight: "bold",
+                  flexDirection: "row",
                 }}
               >
-                Ingredients
-              </Text>
+                <Text
+                  style={{
+                    color: "#f8c700",
+                    fontSize: 15,
+                    paddingLeft: 15,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Ingredients
+                </Text>
+              </View>
               {editForm?.ingredients && (
                 <View
                   style={{
@@ -171,66 +297,103 @@ export default function EditDrink() {
                         marginBottom: 10,
                       }}
                     >
-                      <TextInput
-                        selectionColor="#aaa"
+                      <View
                         style={{
-                          backgroundColor: "#2d2d2d",
                           width: "50%",
-                          padding: 0,
-                          height: 40,
-                          borderRadius: 5,
                           marginRight: 10,
                         }}
-                        activeUnderlineColor="#2d2d2d"
-                        underlineStyle={{ display: "none" }}
-                        placeholder="Ingredient"
-                        placeholderTextColor="#aaa"
-                        textColor="#fff"
-                        value={ingredient.name}
-                        onChangeText={(text) => {
-                          setEditForm({
-                            ...editForm,
-                            ingredients: editForm?.ingredients?.map((ingredient, i) => {
-                              if (i == index) {
-                                return { ...ingredient, name: text };
-                              }
-                              return ingredient;
-                            }),
-                          });
-                        }}
-                      />
-                      <TextInput
-                        selectionColor="#aaa"
+                      >
+                        {errors[`ingredients[${index}].name`] && (
+                          <Text
+                            style={{
+                              color: "red",
+                              fontSize: 15,
+                              paddingLeft: 15,
+                              fontWeight: "bold",
+                            }}
+                          >
+                            *{errors[`ingredients[${index}].name`]}
+                          </Text>
+                        )}
+                        <TextInput
+                          selectionColor="#aaa"
+                          style={{
+                            backgroundColor: "#2d2d2d",
+                            width: "100%",
+                            padding: 0,
+                            height: 40,
+                            borderRadius: 5,
+                          }}
+                          activeUnderlineColor="#2d2d2d"
+                          underlineStyle={{ display: "none" }}
+                          placeholder="Ingredient"
+                          placeholderTextColor="#aaa"
+                          textColor="#fff"
+                          value={ingredient.name}
+                          onChangeText={(text) => {
+                            setEditForm({
+                              ...editForm,
+                              ingredients: editForm?.ingredients?.map((ingredient, i) => {
+                                if (i == index) {
+                                  return { ...ingredient, name: text };
+                                }
+                                return ingredient;
+                              }),
+                            });
+                          }}
+                        />
+                      </View>
+                      <View
                         style={{
-                          backgroundColor: "#2d2d2d",
                           width: "32%",
-                          padding: 0,
-                          height: 40,
-                          borderRadius: 5,
+                          marginRight: 10,
                         }}
-                        activeUnderlineColor="#2d2d2d"
-                        underlineStyle={{ display: "none" }}
-                        placeholder="Amount"
-                        placeholderTextColor="#aaa"
-                        textColor="#fff"
-                        value={ingredient.amount}
-                        onChangeText={(text) => {
-                          setEditForm({
-                            ...editForm,
-                            ingredients: editForm?.ingredients?.map((ingredient, i) => {
-                              if (i == index) {
-                                return { ...ingredient, amount: text };
-                              }
-                              return ingredient;
-                            }),
-                          });
-                        }}
-                      />
+                      >
+                        {errors[`ingredients[${index}].amount`] && (
+                          <Text
+                            style={{
+                              color: "red",
+                              fontSize: 15,
+                              paddingLeft: 15,
+                              fontWeight: "bold",
+                            }}
+                          >
+                            *{errors[`ingredients[${index}].amount`]}
+                          </Text>
+                        )}
+                        <TextInput
+                          selectionColor="#aaa"
+                          style={{
+                            backgroundColor: "#2d2d2d",
+                            padding: 0,
+                            height: 40,
+                            borderRadius: 5,
+                          }}
+                          activeUnderlineColor="#2d2d2d"
+                          underlineStyle={{ display: "none" }}
+                          placeholder="Amount"
+                          placeholderTextColor="#aaa"
+                          textColor="#fff"
+                          value={ingredient.amount}
+                          onChangeText={(text) => {
+                            setEditForm({
+                              ...editForm,
+                              ingredients: editForm?.ingredients?.map((ingredient, i) => {
+                                if (i == index) {
+                                  return { ...ingredient, amount: text };
+                                }
+                                return ingredient;
+                              }),
+                            });
+                          }}
+                        />
+                      </View>
                       <IconButton
                         icon="delete"
                         iconColor="#f8c700"
                         style={{
                           height: 30,
+                          alignSelf: "flex-end",
                         }}
                         onPress={() => {
                           setEditForm({
@@ -262,16 +425,34 @@ export default function EditDrink() {
                   </Button>
                 </View>
               )}
-              <Text
+              <View
                 style={{
-                  color: "#f8c700",
-                  fontSize: 15,
-                  paddingLeft: 15,
-                  fontWeight: "bold",
+                  flexDirection: "row",
                 }}
               >
-                Instructions
-              </Text>
+                <Text
+                  style={{
+                    color: "#f8c700",
+                    fontSize: 15,
+                    paddingLeft: 15,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Instructions
+                </Text>
+                {errors?.instructions && (
+                  <Text
+                    style={{
+                      color: "red",
+                      fontSize: 15,
+                      paddingLeft: 15,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    *{errors?.instructions}
+                  </Text>
+                )}
+              </View>
               <TextInput
                 selectionColor="#aaa"
                 style={{
@@ -324,38 +505,58 @@ export default function EditDrink() {
                           marginBottom: 10,
                         }}
                       >
-                        <TextInput
-                          selectionColor="#aaa"
+                        <View
                           style={{
-                            backgroundColor: "#2d2d2d",
                             width: "85%",
-                            padding: 0,
-                            height: 40,
-                            borderRadius: 5,
+                            marginRight: 10,
                           }}
-                          activeUnderlineColor="#2d2d2d"
-                          underlineStyle={{ display: "none" }}
-                          placeholder="Tag"
-                          placeholderTextColor="#aaa"
-                          textColor="#fff"
-                          value={tag.name}
-                          onChangeText={(text) => {
-                            setEditForm({
-                              ...editForm,
-                              tags: editForm?.tags?.map((tag, i) => {
-                                if (i == index) {
-                                  return { ...tag, name: text };
-                                }
-                                return tag;
-                              }),
-                            });
-                          }}
-                        />
+                        >
+                          {errors[`tags[${index}].name`] && (
+                            <Text
+                              style={{
+                                color: "red",
+                                fontSize: 15,
+                                paddingLeft: 15,
+                                fontWeight: "bold",
+                              }}
+                            >
+                              *{errors[`tags[${index}].name`]}
+                            </Text>
+                          )}
+                          <TextInput
+                            selectionColor="#aaa"
+                            style={{
+                              backgroundColor: "#2d2d2d",
+                              width: "100%",
+                              padding: 0,
+                              height: 40,
+                              borderRadius: 5,
+                            }}
+                            activeUnderlineColor="#2d2d2d"
+                            underlineStyle={{ display: "none" }}
+                            placeholder="Tag"
+                            placeholderTextColor="#aaa"
+                            textColor="#fff"
+                            value={tag.name}
+                            onChangeText={(text) => {
+                              setEditForm({
+                                ...editForm,
+                                tags: editForm?.tags?.map((tag, i) => {
+                                  if (i == index) {
+                                    return { ...tag, name: text };
+                                  }
+                                  return tag;
+                                }),
+                              });
+                            }}
+                          />
+                        </View>
                         <IconButton
                           icon="delete"
                           iconColor="#f8c700"
                           style={{
                             height: 30,
+                            alignSelf: "flex-end",
                           }}
                           onPress={() => {
                             setEditForm({
@@ -376,6 +577,7 @@ export default function EditDrink() {
                   borderRadius: 5,
                   marginBottom: 10,
                   width: "100%",
+                  marginTop: 5,
                 }}
                 onPress={() => {
                   setEditForm({
@@ -407,6 +609,9 @@ export default function EditDrink() {
               borderRadius: 5,
               width: "48%",
             }}
+            onPress={() => {
+              handleSubmit();
+            }}
           >
             Save
           </Button>
@@ -416,6 +621,9 @@ export default function EditDrink() {
               backgroundColor: "#f8c700",
               borderRadius: 5,
               width: "48%",
+            }}
+            onPress={() => {
+              router.back();
             }}
           >
             Cancel
