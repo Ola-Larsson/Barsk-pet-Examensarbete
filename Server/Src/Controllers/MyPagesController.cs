@@ -49,4 +49,18 @@ public class MyPagesController : ControllerBase
         return Ok(drinks);
     }
 
+    [HttpGet("myfavorites")]
+    [Authorize]
+    public async Task<ActionResult<IEnumerable<DrinkDto>>> GetMyFavorites()
+    {
+        var user = await _userManager.FindByNameAsync(User.Identity.Name);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+
+        var drinks = await _drinksService.GetFavorites();
+
+        return Ok(drinks);
+    }
 }

@@ -105,7 +105,7 @@ export default function MyDrinks() {
                       fontSize: 12,
                     }}
                   >
-                    {drink.created}
+                    {new Date(drink.created).toDateString()}
                   </Text>
                 </View>
                 <View

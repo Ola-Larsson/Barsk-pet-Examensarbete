@@ -1,16 +1,18 @@
-import { Stack, usePathname } from "expo-router";
+import { Stack, usePathname, useRouter } from "expo-router";
 import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { Card, IconButton, Text } from "react-native-paper";
+import Rating from "../components/Rating";
 import { useAuth } from "../contexts/AuthContext";
 import { useApi } from "./hooks/useApi";
 
 export default function Details() {
   const pathName = usePathname().split("/")[1];
   const auth = useAuth();
+  const router = useRouter();
   const api = useApi("/drinks/" + pathName, true, auth.auth?.token);
   const favoriteApi = useApi("/favorites/" + pathName, false, auth.auth?.token);
-  const ratingApi = useApi("/ratings/" + pathName, false, auth.auth?.token);
+  const ratingApi = useApi("/drinks/rating/" + pathName, false, auth.auth?.token);
 
   React.useEffect(() => {
     if (favoriteApi.status == "success") {
@@ -88,6 +90,7 @@ export default function Details() {
             flexDirection: "row",
             paddingHorizontal: 10,
             justifyContent: "space-between",
+            marginTop: 10,
           }}
         >
           <Text
@@ -101,15 +104,13 @@ export default function Details() {
           >
             {api.value?.name}
           </Text>
-          <Text
-            style={{
-              color: "#aaa",
-              fontSize: 24,
-              marginBottom: 0,
-            }}
-          >
-            Rating: {api.value?.rating} / 5
-          </Text>
+          <Rating
+            id={api.value?.id}
+            rating={api.value?.rating}
+            ratingCount={api.value?.ratingCount}
+            currentUserRating={api.value?.currentUserRating}
+            api={ratingApi}
+          />
         </View>
         <Text
           style={{
@@ -126,6 +127,9 @@ export default function Details() {
               color: "#f8c700",
               fontSize: 16,
               fontWeight: "bold",
+            }}
+            onPress={() => {
+              router.push("user/" + api.value?.user);
             }}
           >
             {api.value?.user}

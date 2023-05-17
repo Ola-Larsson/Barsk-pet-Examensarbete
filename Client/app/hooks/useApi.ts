@@ -33,7 +33,7 @@ export const useApi = (
   const execute = useCallback(
     async (method?: MethodType, data?: data, urlParams: urlParams = "") => {
       setStatus("pending");
-      setValue(null);
+      // setValue(null);
       setError(null);
       try {
         const response = await query(path, method, data, urlParams, authKey);

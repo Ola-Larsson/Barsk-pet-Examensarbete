@@ -48,6 +48,27 @@ public class DrinksController : ControllerBase
         return Ok(drink);
     }
 
+    [HttpGet("user/{id}")]
+    public async Task<ActionResult<UserPageDto>> GetMyDrinks(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            return NoContent();
+        }
+
+        var drinks = await _drinksService.Get(user);
+
+        var userPage = new UserPageDto
+        {
+            Id = user.Id,
+            UserName = user.UserName,
+            Drinks = drinks.ToList()
+        };
+
+        return Ok(userPage);
+    }
+
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<Drink>> Post(CreateDrinkRequest drink)
@@ -89,6 +110,28 @@ public class DrinksController : ControllerBase
     public async Task<IActionResult> Delete([FromBody] string id)
     {
         await _drinksService.Delete(id);
+
+        return NoContent();
+    }
+
+    [HttpPost("rating/{id}")]
+    [Authorize]
+    public async Task<IActionResult> Rate(string id, [FromBody] int rating)
+    {
+        var user = await _userManager.FindByNameAsync(User.Identity.Name);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+
+        var drink = await _drinksService.Get(id);
+
+        if (drink == null)
+        {
+            return NotFound();
+        }
+
+        await _drinksService.Rate(id, rating);
 
         return NoContent();
     }
