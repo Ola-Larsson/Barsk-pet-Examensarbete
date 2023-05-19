@@ -105,7 +105,8 @@ public class DrinksService
             RatingCount = x.RatingCount,
             IsFavorite = favorites.Any(f => f.DrinkId == x.Id),
             IsOwned = x.User?.UserName == user?.UserName ? true : false,
-            CurrentUserRating = x.Ratings.FirstOrDefault(r => r.UserId == user?.Id)?.Value ?? null
+            CurrentUserRating = x.Ratings.FirstOrDefault(r => r.UserId == user?.Id)?.Value ?? null,
+            Created = x.CreatedAt
         });
 
         return drinksDto;
@@ -238,5 +239,83 @@ public class DrinksService
         // should only delete drink row and nothing else
         _context.Drinks.Remove(drink).State = EntityState.Deleted;
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<DrinkDto>> GetFavorites()
+    {
+        var currentUser = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
+        var favorites = _context.Favorites
+            .Include(f => f.Drink)
+                .ThenInclude(d => d.User)
+            .Include(f => f.Drink)
+                .ThenInclude(d => d.Ratings)
+            .Include(f => f.Drink)
+                .ThenInclude(d => d.Tags)
+            .Include(f => f.Drink)
+                .ThenInclude(d => d.Ingredients)
+                    .ThenInclude(i => i.Ingredient)
+            .Include(f => f.User)
+            .Where(f => f.UserId == currentUser.Id).ToList();
+
+
+        var drinksDto = favorites.Select(x => new DrinkDto
+        {
+            Id = x.Drink.Id,
+            Name = x.Drink.Name,
+            Description = x.Drink.Description,
+            ImageUrl = x.Drink.Image,
+            Instructions = x.Drink.Instructions,
+            Ingredients = x.Drink.Ingredients.Select(i => new DrinkIngredientDto
+            {
+                Name = i.Ingredient.Name,
+                Amount = i.Amount,
+            }).ToList(),
+            Tags = x.Drink.Tags.Select(t => new TagDto
+            {
+                Name = t.Name
+            }).ToList(),
+            User = x.User?.UserName ?? "",
+            Rating = x.Drink.AverageRating,
+            RatingCount = x.Drink.RatingCount,
+            IsFavorite = favorites.Any(f => f.DrinkId == x.Id),
+            CurrentUserRating = x.Drink.Ratings.FirstOrDefault(r => r.UserId == currentUser?.Id)?.Value ?? null,
+            IsOwned = x.User.UserName == currentUser?.UserName ? true : false,
+            Created = x.Drink.CreatedAt,
+        });
+
+        return drinksDto.ToList();
+    }
+
+    public async Task<bool> Rate(string id, int rating)
+    {
+        var drink = await _context.Drinks
+            .Include(d => d.Ratings)
+            .FirstOrDefaultAsync(d => d.Id == Guid.Parse(id));
+
+        if (drink == null)
+        {
+            return false;
+        }
+
+        var currentUser = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
+        var userRating = drink.Ratings.FirstOrDefault(r => r.UserId == currentUser.Id);
+
+        if (userRating == null)
+        {
+            drink.Ratings.Add(new Rating
+            {
+                DrinkId = drink.Id,
+                UserId = currentUser.Id,
+                Value = rating
+            });
+        }
+        else
+        {
+            userRating.Value = rating;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return true;
     }
 }

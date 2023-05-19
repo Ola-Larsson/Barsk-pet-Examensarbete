@@ -59,6 +59,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<DrinksService>();
 builder.Services.AddScoped<FavoritesService>();
 builder.Services.AddScoped<MediaService>();
+builder.Services.AddScoped<SearchService>();
 
 builder.Services.AddCors(options =>
 {

@@ -1,14 +1,15 @@
-import { useRouter } from "expo-router";
+import { Stack, usePathname, useRouter } from "expo-router";
 import { Image, RefreshControl, ScrollView, TouchableOpacity, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
-import { useApi } from "../../app/hooks/useApi";
-import { useAuth } from "../../contexts/AuthContext";
 import { Drink } from "../../interfaces/auth/types";
+import { useApi } from "../hooks/useApi";
 
-export default function MyFavorites() {
-  const auth = useAuth();
+export default function UserView() {
   const router = useRouter();
-  const api = useApi("/mypages/myfavorites", true, auth.auth?.token);
+  const pathName = usePathname();
+  const currentRoute = pathName.split("/")[2];
+
+  const api = useApi("/drinks/user/" + currentRoute, true);
 
   return (
     <View
@@ -17,10 +18,11 @@ export default function MyFavorites() {
         backgroundColor: "#1b1c1d",
       }}
     >
+      <Stack.Screen options={{ title: api.value?.userName ? api.value.userName : "Loading.." }} />
       <ScrollView
         style={{
           flex: 1,
-          backgroundColor: "#1e1e1e",
+          backgroundColor: "#1b1c1d",
           padding: 15,
         }}
         refreshControl={
@@ -43,9 +45,9 @@ export default function MyFavorites() {
             marginBottom: 20,
           }}
         >
-          Your Favorites
+          Created Drinks
         </Text>
-        {api.value?.map((drink: Drink) => {
+        {api.value?.drinks?.map((drink: Drink) => {
           return (
             <View
               style={{
