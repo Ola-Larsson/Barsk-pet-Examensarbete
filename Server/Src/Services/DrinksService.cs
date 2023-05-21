@@ -36,11 +36,6 @@ public class DrinksService
                 .ThenInclude(i => i.Ingredient)
             .ToListAsync();
 
-        var currentUser = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
-        List<Favorite> favorites;
-        if (currentUser != null) favorites = _context.Favorites.Where(f => f.UserId == currentUser.Id).ToList();
-        else favorites = new List<Favorite>();
-
         var drinksDto = drinks.Select(x => new DrinkDto
         {
             Id = x.Id,
@@ -60,9 +55,6 @@ public class DrinksService
             User = x.User?.UserName ?? "",
             Rating = x.AverageRating,
             RatingCount = x.RatingCount,
-            IsFavorite = favorites.Any(f => f.DrinkId == x.Id),
-            IsOwned = x.User?.UserName == currentUser?.UserName ? true : false,
-            CurrentUserRating = x.Ratings.FirstOrDefault(r => r.UserId == currentUser?.Id)?.Value ?? null
         });
 
         return drinksDto;
@@ -128,10 +120,20 @@ public class DrinksService
             return null;
         }
 
-        var currentUser = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
+        var isLoggedIn = _httpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
         List<Favorite> favorites;
-        if (currentUser != null) favorites = _context.Favorites.Where(f => f.UserId == currentUser.Id).ToList();
-        else favorites = new List<Favorite>();
+        ApplicationUser currentUser;
+
+        if (isLoggedIn)
+        {
+            currentUser = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
+            favorites = _context.Favorites.Where(f => f.UserId == currentUser.Id).ToList();
+        }
+        else
+        {
+            favorites = new List<Favorite>();
+            currentUser = null;
+        }
 
         var drinkDto = new DrinkDto
         {

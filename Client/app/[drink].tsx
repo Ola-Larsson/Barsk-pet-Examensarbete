@@ -80,6 +80,7 @@ export default function Details() {
               right: 10,
               backgroundColor: "transparent",
             }}
+            disabled={!auth.auth?.token}
             onPress={() => {
               api.value?.isFavorite ? favoriteApi.execute("DELETE") : favoriteApi.execute("POST");
             }}

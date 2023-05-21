@@ -22,6 +22,7 @@ const ratingButton = (number: number, api: any, rating: number, auth: boolean) =
       }}
       disabled={!auth}
       style={{ margin: 0, padding: 0, width: 25, height: 25 }}
+      key={number}
     />
   );
 };
