@@ -2,11 +2,13 @@ import { usePathname, useRouter } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 import { IconButton } from "react-native-paper";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Tabs() {
   const router = useRouter();
   const pathName = usePathname();
   const currentRoute = pathName.split("/")[1];
+  const auth = useAuth();
 
   return (
     <View
@@ -34,7 +36,9 @@ export default function Tabs() {
         iconColor={
           ["my-page", "my-favorites", "profile"].includes(currentRoute) ? "#f8c700" : "#aaa"
         }
-        onPress={() => router.push("/my-page")}
+        onPress={() =>
+          auth.auth?.token ? router.push("/my-page") : router.push("/(auth)/sign-in")
+        }
       />
     </View>
   );

@@ -51,7 +51,7 @@ public class DrinksController : ControllerBase
     [HttpGet("user/{id}")]
     public async Task<ActionResult<UserPageDto>> GetMyDrinks(string id)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userManager.FindByNameAsync(id);
         if (user == null)
         {
             return NoContent();

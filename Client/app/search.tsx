@@ -144,7 +144,7 @@ export default function Search() {
                     onPress={() => {
                       result.type == "Drink"
                         ? router.push("/" + result.id)
-                        : router.push("user/" + result.id);
+                        : router.push("user/" + result.name);
                     }}
                   >
                     <IconButton
