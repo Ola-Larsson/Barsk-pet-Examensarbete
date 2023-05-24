@@ -22,4 +22,11 @@ public class MediaController : ControllerBase
         var media = await _mediaService.Get(id);
         return File(media, "image/jpeg");
     }
+
+    [HttpPost]
+    public async Task<ActionResult<String>> Post(byte[] image)
+    {
+        var imageUrl = await _mediaService.Save(image);
+        return CreatedAtAction(nameof(Post), new { imageUrl });
+    }
 }

@@ -611,6 +611,7 @@ export default function CreateDrink() {
             }}
             onPress={() => {
               handleSubmit();
+              router.back();
             }}
           >
             Save
