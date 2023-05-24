@@ -1,5 +1,5 @@
-import { Stack } from "expo-router";
-import React, { useEffect } from "react";
+import { Stack, useFocusEffect } from "expo-router";
+import React from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { Text } from "react-native-paper";
 import DrinkCard from "../components/DrinkCard";
@@ -66,35 +66,50 @@ type Drink = {
 // };
 
 export default function Home() {
-  const [favorites, setFavorites] = React.useState<Drink[]>();
-  const [popular, setPopular] = React.useState<Drink[]>();
-  const [newDrinks, setNewDrinks] = React.useState<Drink[]>();
-
   const auth = useAuth();
-  const api = useApi("/drinks", true, auth.auth?.token);
+  const api = useApi("/drinks", false, auth.auth?.token);
+  const authApi = useApi("/drinks", false, auth.auth?.token);
 
-  useEffect(() => {
-    const getTokenAsync = async () => {
-      const token = await getAuthFromStore();
-      if (token) {
-        if (new Date(token.expiration).getTime() < Date.now()) {
-          auth.signOut();
-          return;
+  const [favorites, setFavorites] = React.useState<Drink[]>([]);
+  const [popular, setPopular] = React.useState<Drink[]>([]);
+  const [recent, setRecent] = React.useState<Drink[]>([]);
+  const [recommended, setRecommended] = React.useState<Drink[]>([]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const getTokenAsync = async () => {
+        const token = await getAuthFromStore();
+        if (token) {
+          if (new Date(token.expiration).getTime() < Date.now()) {
+            auth.signOut();
+            return;
+          }
+
+          auth.signIn(token);
         }
+      };
+      getTokenAsync();
 
-        auth.signIn(token);
+      api.execute();
+    }, [])
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (api.status === "success") {
+        setFavorites(api.value?.favorites);
+        setPopular(api.value?.popular);
+        setRecent(api.value?.recent);
+        setRecommended(api.value?.recommended);
       }
-    };
-    getTokenAsync();
-  }, []);
+    }, [api.status])
+  );
 
-  useEffect(() => {
-    if (api.status == "success") {
-      setFavorites(api.value);
-      setNewDrinks(api.value);
-      setPopular(api.value);
-    }
-  });
+  useFocusEffect(
+    React.useCallback(() => {
+      api.execute();
+    }, [auth.auth?.token])
+  );
 
   return (
     <View
@@ -152,6 +167,7 @@ export default function Home() {
           </Text>
         </View>
         <SideScrollContainer
+          key="fave"
           header={
             <Text
               style={{
@@ -165,11 +181,31 @@ export default function Home() {
             </Text>
           }
         >
-          {favorites?.map((drink) => (
-            <DrinkCard key={drink.id} drink={drink} />
+          {favorites.map((drink: any) => (
+            <DrinkCard key={drink.key} drink={drink} />
           ))}
         </SideScrollContainer>
         <SideScrollContainer
+          key="recommended"
+          header={
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                color: "#fff",
+                marginLeft: 15,
+              }}
+            >
+              Recommended
+            </Text>
+          }
+        >
+          {recommended.map((drink: any) => (
+            <DrinkCard key={drink.key} drink={drink} />
+          ))}
+        </SideScrollContainer>
+        <SideScrollContainer
+          key="new"
           header={
             <Text
               style={{
@@ -183,11 +219,12 @@ export default function Home() {
             </Text>
           }
         >
-          {newDrinks?.map((drink) => (
-            <DrinkCard key={drink.id} drink={drink} />
+          {recent.map((drink: any) => (
+            <DrinkCard key={drink.key} drink={drink} />
           ))}
         </SideScrollContainer>
         <SideScrollContainer
+          key="popular"
           header={
             <Text
               style={{
@@ -201,8 +238,8 @@ export default function Home() {
             </Text>
           }
         >
-          {popular?.map((drink) => (
-            <DrinkCard key={drink.id} drink={drink} />
+          {popular.map((drink: any) => (
+            <DrinkCard key={drink.key} drink={drink} />
           ))}
         </SideScrollContainer>
         <View style={{ height: 30 }} />

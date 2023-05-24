@@ -91,7 +91,8 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<DatabaseContext>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-    var seeder = new SeedDatabase(context, userManager);
+    var mediaService = services.GetRequiredService<MediaService>();
+    var seeder = new SeedDatabase(context, userManager, mediaService);
     await seeder.Seed();
 }
 

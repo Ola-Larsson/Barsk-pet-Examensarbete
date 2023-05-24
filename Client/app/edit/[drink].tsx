@@ -1,3 +1,4 @@
+import * as ImagePicker from "expo-image-picker";
 import { Stack, usePathname, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
@@ -5,25 +6,24 @@ import { Button, Card, IconButton, Text, TextInput } from "react-native-paper";
 import { useAuth } from "../../contexts/AuthContext";
 import { Drink } from "../../interfaces/auth/types";
 import { useApi } from "../hooks/useApi";
-import * as ImagePicker from "expo-image-picker";
 
 export default function EditDrink() {
-  const [editForm, setEditForm] = useState<Drink>({ 
-  id: '',
-  name: '',
-  imageUrl: '',
-  description: '',
-  ingredients: [],
-  tags: [],
-  instructions: '',
-  created: '',
-  user: '',
-  rating: 0,
-  ratingCount: 0,
-  isFavorite: false,
-  currentUserRating: 0,
-  isOwned: false,
-});
+  const [editForm, setEditForm] = useState<Drink>({
+    id: "",
+    name: "",
+    imageUrl: "",
+    description: "",
+    ingredients: [],
+    tags: [],
+    instructions: "",
+    created: "",
+    user: "",
+    rating: 0,
+    ratingCount: 0,
+    isFavorite: false,
+    currentUserRating: 0,
+    isOwned: false,
+  });
 
   const pathName = usePathname();
   const auth = useAuth();
@@ -35,7 +35,6 @@ export default function EditDrink() {
   const editImageSave = useApi("/media/", true, auth.auth?.token);
 
   const save = () => {
-    console.log(editForm);
     editApi.execute("PUT", editForm);
   };
 
@@ -52,8 +51,8 @@ export default function EditDrink() {
   }, [editApi.status]);
   useEffect(() => {
     if (editImageSave.status == "success") {
-      const editImageUrl : string = editImageSave.value?.imageUrl;
-      setEditForm({ ... editForm, imageUrl: editImageUrl });
+      const editImageUrl: string = editImageSave.value?.imageUrl;
+      setEditForm({ ...editForm, imageUrl: editImageUrl });
     }
   }, [editImageSave.status]);
 
@@ -69,9 +68,8 @@ export default function EditDrink() {
 
     if (result.canceled) return;
 
-    if (!result.canceled) {    
-      //setImg(result.assets[0].uri);
-      editImageSave.execute("POST", result.assets[0].base64);       
+    if (!result.canceled) {
+      editImageSave.execute("POST", result.assets[0].base64);
     }
   };
 
@@ -110,7 +108,7 @@ export default function EditDrink() {
               }}
             >
               <Card.Cover
-                source={editForm.imageUrl ? { uri: editForm.imageUrl } : { }}
+                source={editForm.imageUrl ? { uri: editForm.imageUrl } : {}}
                 style={{
                   width: "100%",
                   height: 300,

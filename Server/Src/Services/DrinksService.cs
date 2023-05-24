@@ -24,7 +24,7 @@ public class DrinksService
         _mediaService = mediaService;
     }
 
-    public async Task<IEnumerable<DrinkDto>> Get()
+    public async Task<StartPageDto> Get()
     {
         var drinks = await _context.Drinks
             .Include(d => d.User)
@@ -35,6 +35,21 @@ public class DrinksService
             .Include(d => d.Ingredients)
                 .ThenInclude(i => i.Ingredient)
             .ToListAsync();
+
+        var isLoggedIn = _httpContextAccessor.HttpContext.User.Identity.IsAuthenticated;
+        List<Favorite> favorites;
+        ApplicationUser currentUser;
+
+        if (isLoggedIn)
+        {
+            currentUser = await _userManager.FindByNameAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
+            favorites = _context.Favorites.Where(f => f.UserId == currentUser.Id).ToList();
+        }
+        else
+        {
+            favorites = new List<Favorite>();
+            currentUser = null;
+        }
 
         var drinksDto = drinks.Select(x => new DrinkDto
         {
@@ -55,9 +70,34 @@ public class DrinksService
             User = x.User?.UserName ?? "",
             Rating = x.AverageRating,
             RatingCount = x.RatingCount,
-        });
+            Created = x.CreatedAt,
+            IsFavorite = favorites.Any(f => f.DrinkId == x.Id),
+        }).ToList();
 
-        return drinksDto;
+        List<DrinkDto> Favorites = drinksDto.Where(d => (bool)d.IsFavorite).ToList();
+        List<DrinkDto> popular = drinksDto.OrderByDescending(d => d.RatingCount).Take(4).ToList();
+        List<DrinkDto> recent = drinksDto.OrderByDescending(d => d.Created).Take(4).ToList();
+        List<DrinkDto> recommended = drinksDto.OrderBy(d => Guid.NewGuid()).Take(4).ToList();
+
+        return new StartPageDto
+        {
+            Favorites = Favorites.Select(x => MapToSmall(x, x.Id + "fave")).ToList(),
+            Popular = popular.Select(x => MapToSmall(x, x.Id + "pop")).ToList(),
+            Recent = recent.Select(x => MapToSmall(x, x.Id + "rec")).ToList(),
+            Recommended = recommended.Select(x => MapToSmall(x, x.Id + "rec")).ToList(),
+        };
+    }
+
+    private SmallDrinkDto MapToSmall(DrinkDto drink, string keyModifier = null)
+    {
+        return new SmallDrinkDto
+        {
+            Id = drink.Id,
+            Key = Guid.NewGuid().ToString(),
+            Name = drink.Name,
+            ImageUrl = drink.ImageUrl,
+            Tags = drink.Tags.ToString(),
+        };
     }
 
     public async Task<IEnumerable<DrinkDto>> Get(ApplicationUser user)

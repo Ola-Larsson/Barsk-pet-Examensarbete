@@ -22,7 +22,7 @@ public class DrinksController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<DrinkDto>>> Get()
+    public async Task<ActionResult<StartPageDto>> Get()
     {
         try
         {

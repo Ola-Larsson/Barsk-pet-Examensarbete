@@ -2,20 +2,11 @@ import { useRouter } from "expo-router";
 import { Card, Surface, Text } from "react-native-paper";
 
 type Props = {
-  drink: {
-    id: string;
-    name: string;
-    imageUrl: string;
-    description: string;
-    ingredients: { name: string; amount: string }[];
-    tags: { name: string }[];
-    instructions: string;
-  };
+  drink: any;
 };
 
 export default function DrinkCard({ drink }: Props) {
   const router = useRouter();
-
   return (
     <Surface
       style={{
@@ -25,6 +16,7 @@ export default function DrinkCard({ drink }: Props) {
         marginRight: 10,
         height: 160,
       }}
+      key={drink.key}
     >
       <Card
         style={{
@@ -62,7 +54,7 @@ export default function DrinkCard({ drink }: Props) {
         numberOfLines={1}
         ellipsizeMode="tail"
       >
-        {drink.tags.map((tag) => tag.name).join(", ")}
+        {drink.tags}
       </Text>
     </Surface>
   );
