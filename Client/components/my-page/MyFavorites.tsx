@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Image, RefreshControl, ScrollView, TouchableOpacity, View } from "react-native";
+import { Image, Pressable, RefreshControl, ScrollView, TouchableOpacity, View } from "react-native";
 import { IconButton, Text } from "react-native-paper";
 import { useApi } from "../../app/hooks/useApi";
 import { useAuth } from "../../contexts/AuthContext";
@@ -47,6 +47,11 @@ export default function MyFavorites() {
         </Text>
         {api.value?.map((drink: Drink) => {
           return (
+            <Pressable 
+            key={drink.id}
+            onPress={() => {
+            router.push(`/${drink.id}`);
+            }}> 
             <View
               style={{
                 flexDirection: "row",
@@ -123,6 +128,7 @@ export default function MyFavorites() {
                 </View>
               </View>
             </View>
+        </Pressable>
           );
         })}
       </ScrollView>
