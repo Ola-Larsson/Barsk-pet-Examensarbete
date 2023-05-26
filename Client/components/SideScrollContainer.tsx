@@ -11,7 +11,7 @@ export default function SideScrollContainer({ header, children, drinks }: Props)
   return (
     <View
       style={{
-        marginBottom: 18,
+        marginBottom: 12,
       }}
     >
       {header}

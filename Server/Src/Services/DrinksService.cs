@@ -96,7 +96,7 @@ public class DrinksService
             Key = Guid.NewGuid().ToString(),
             Name = drink.Name,
             ImageUrl = drink.ImageUrl,
-            Tags = drink.Tags.ToString(),
+            Tags = string.Join(", ", drink.Tags.Select(t => t.Name)),
         };
     }
 

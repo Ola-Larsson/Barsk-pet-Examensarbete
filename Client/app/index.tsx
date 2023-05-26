@@ -150,7 +150,7 @@ export default function Home() {
               fontSize: 24,
               fontWeight: "bold",
               color: "#fff",
-              marginBottom: 30,
+              marginBottom: 15,
             }}
           >
             Hello{" "}

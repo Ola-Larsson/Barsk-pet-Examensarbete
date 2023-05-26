@@ -107,10 +107,6 @@ const query = async (
     });
   }
 
-  if (!res.ok) {
-    console.log(res);
-  }
-
   if (res.status === 401) {
     throw new Error("Unauthorized");
   }
@@ -118,9 +114,9 @@ const query = async (
   if (res.ok) {
     try {
       const txt = await res.text();
-      // if (txt === "") {
-      //   return null;
-      // }
+      if (txt === "") {
+        return null;
+      }
       const data = JSON.parse(txt);
       return data;
     } catch (error) {

@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import MyDrinks from "../components/my-page/MyDrinks";
@@ -39,6 +39,7 @@ export default function myPage() {
         flex: 1,
       }}
     >
+      <Stack.Screen options={{ title: "My Page" }} />
       <TopTabs selected={selected} setTab={setSelected} />
       {renderTab()}
     </View>

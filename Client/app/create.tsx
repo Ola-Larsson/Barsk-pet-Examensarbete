@@ -113,7 +113,7 @@ export default function CreateDrink() {
         height: "100%",
       }}
     >
-      <Stack.Screen options={{ title: editForm.name ? "lmao" : "Xd" }} />
+      <Stack.Screen options={{ title: editForm.name ? editForm.name : "New Drink" }} />
       <ScrollView
         style={{
           flex: 1,
@@ -182,7 +182,7 @@ export default function CreateDrink() {
                     fontWeight: "bold",
                   }}
                 >
-                  Drink Namexd
+                  Drink Name
                 </Text>
                 {errors?.name && (
                   <Text

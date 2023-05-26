@@ -21,6 +21,7 @@ export default function Details() {
   }, [favoriteApi.status]);
 
   React.useEffect(() => {
+    console.log(ratingApi.status);
     if (ratingApi.status == "success") {
       api.execute();
     }
