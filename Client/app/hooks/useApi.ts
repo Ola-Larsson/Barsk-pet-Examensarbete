@@ -107,8 +107,6 @@ const query = async (
     });
   }
 
-  console.log(path, res.status);
-
   if (res.status === 401) {
     throw new Error("Unauthorized");
   }

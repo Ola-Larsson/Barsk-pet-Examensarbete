@@ -21,6 +21,7 @@ export default function Details() {
   }, [favoriteApi.status]);
 
   React.useEffect(() => {
+    console.log(ratingApi.status);
     if (ratingApi.status == "success") {
       api.execute();
     }
@@ -53,142 +54,148 @@ export default function Details() {
           />
         }
       >
-        <Card
-          style={{
-            backgroundColor: "transparent",
-            width: "100%",
-            height: 300,
-            flex: 1,
-          }}
-        >
-          <Card.Cover
-            source={{ uri: api.value?.imageUrl }}
-            style={{
-              width: "100%",
-              height: 300,
-              backgroundColor: "transparent",
-            }}
-            borderRadius={0}
-          />
-          <IconButton
-            icon={api.value?.isFavorite ? "heart" : "heart-outline"}
-            iconColor={api.value?.isFavorite ? "#f8c700" : "#f8c700"}
-            size={30}
-            style={{
-              position: "absolute",
-              top: 10,
-              right: 10,
-              backgroundColor: "transparent",
-            }}
-            disabled={!auth.auth?.token}
-            onPress={() => {
-              api.value?.isFavorite ? favoriteApi.execute("DELETE") : favoriteApi.execute("POST");
-            }}
-          />
-        </Card>
-        <View
-          style={{
-            flexDirection: "row",
-            paddingHorizontal: 10,
-            justifyContent: "space-between",
-            marginTop: 10,
-          }}
-        >
-          <Text
-            style={{
-              color: "#fff",
-              fontSize: 24,
-              fontWeight: "bold",
-              marginRight: 2,
-              marginBottom: 0,
-            }}
-          >
-            {api.value?.name}
-          </Text>
-          <Rating
-            id={api.value?.id}
-            rating={api.value?.rating}
-            ratingCount={api.value?.ratingCount}
-            currentUserRating={api.value?.currentUserRating}
-            api={ratingApi}
-          />
-        </View>
-        <Text
-          style={{
-            color: "#aaa",
-            fontSize: 16,
-            fontWeight: "bold",
-            marginBottom: 15,
-            paddingHorizontal: 10,
-          }}
-        >
-          By{" "}
-          <Text
-            style={{
-              color: "#f8c700",
-              fontSize: 16,
-              fontWeight: "bold",
-            }}
-            onPress={() => {
-              router.push("user/" + api.value?.user);
-            }}
-          >
-            {api.value?.user}
-          </Text>
-        </Text>
-        <View
-          style={{
-            paddingHorizontal: 10,
-          }}
-        >
-          <Text
-            style={{
-              color: "#aaa",
-              fontSize: 16,
-            }}
-          >
-            {api.value?.description}
-          </Text>
-          <Text
-            style={{
-              color: "#fff",
-              fontSize: 24,
-              fontWeight: "bold",
-              marginTop: 20,
-            }}
-          >
-            Ingredients
-          </Text>
-          {api.value?.ingredients?.map((ingredient: { name: string; amount: string }) => (
+        {api.value && (
+          <>
+            <Card
+              style={{
+                backgroundColor: "transparent",
+                width: "100%",
+                height: 300,
+                flex: 1,
+              }}
+            >
+              <Card.Cover
+                source={{ uri: api.value?.imageUrl }}
+                style={{
+                  width: "100%",
+                  height: 300,
+                  backgroundColor: "transparent",
+                }}
+                borderRadius={0}
+              />
+              <IconButton
+                icon={api.value?.isFavorite ? "heart" : "heart-outline"}
+                iconColor={api.value?.isFavorite ? "#f8c700" : "#f8c700"}
+                size={30}
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  right: 10,
+                  backgroundColor: "transparent",
+                }}
+                disabled={!auth.auth?.token}
+                onPress={() => {
+                  api.value?.isFavorite
+                    ? favoriteApi.execute("DELETE")
+                    : favoriteApi.execute("POST");
+                }}
+              />
+            </Card>
+            <View
+              style={{
+                flexDirection: "row",
+                paddingHorizontal: 10,
+                justifyContent: "space-between",
+                marginTop: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 24,
+                  fontWeight: "bold",
+                  marginRight: 2,
+                  marginBottom: 0,
+                }}
+              >
+                {api.value?.name}
+              </Text>
+              <Rating
+                id={api.value?.id}
+                rating={api.value?.rating}
+                ratingCount={api.value?.ratingCount}
+                currentUserRating={api.value?.currentUserRating}
+                api={ratingApi}
+              />
+            </View>
             <Text
-              key={ingredient.name}
               style={{
                 color: "#aaa",
                 fontSize: 16,
+                fontWeight: "bold",
+                marginBottom: 15,
+                paddingHorizontal: 10,
               }}
             >
-              {ingredient.name} - {ingredient.amount}
+              By{" "}
+              <Text
+                style={{
+                  color: "#f8c700",
+                  fontSize: 16,
+                  fontWeight: "bold",
+                }}
+                onPress={() => {
+                  router.push("user/" + api.value?.user);
+                }}
+              >
+                {api.value?.user}
+              </Text>
             </Text>
-          ))}
-          <Text
-            style={{
-              color: "#fff",
-              fontSize: 24,
-              fontWeight: "bold",
-              marginTop: 20,
-            }}
-          >
-            Instructions
-          </Text>
-          <Text
-            style={{
-              color: "#aaa",
-              fontSize: 16,
-            }}
-          >
-            {api.value?.instructions}
-          </Text>
-        </View>
+            <View
+              style={{
+                paddingHorizontal: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#aaa",
+                  fontSize: 16,
+                }}
+              >
+                {api.value?.description}
+              </Text>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 24,
+                  fontWeight: "bold",
+                  marginTop: 20,
+                }}
+              >
+                Ingredients
+              </Text>
+              {api.value?.ingredients?.map((ingredient: { name: string; amount: string }) => (
+                <Text
+                  key={ingredient.name}
+                  style={{
+                    color: "#aaa",
+                    fontSize: 16,
+                  }}
+                >
+                  {ingredient.name} - {ingredient.amount}
+                </Text>
+              ))}
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 24,
+                  fontWeight: "bold",
+                  marginTop: 20,
+                }}
+              >
+                Instructions
+              </Text>
+              <Text
+                style={{
+                  color: "#aaa",
+                  fontSize: 16,
+                }}
+              >
+                {api.value?.instructions}
+              </Text>
+            </View>
+          </>
+        )}
       </ScrollView>
     </View>
   );

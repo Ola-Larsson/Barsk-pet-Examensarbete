@@ -136,6 +136,11 @@ export default function MyDrinks() {
             </View>
           );
         })}
+        <View
+          style={{
+            height: 70,
+          }}
+        />
       </ScrollView>
       <FAB
         icon="plus"

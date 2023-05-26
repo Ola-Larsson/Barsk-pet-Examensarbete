@@ -22,11 +22,19 @@ public class MediaService
 
     public async Task<string> Save(Byte[] image)
     {
+        var img = Image.Load(image);
+        img.Mutate(x => x.Resize(700, 700));
+        var ms = new MemoryStream();
+        img.SaveAsJpeg(ms);
+        image = ms.ToArray();
+
         var media = new Media
         {
             Id = Guid.NewGuid().ToString(),
             Data = image
         };
+
+
         await _context.Media.AddAsync(media);
         await _context.SaveChangesAsync();
 
@@ -37,8 +45,13 @@ public class MediaService
 
     private string GetBaseUrl(Media media)
     {
-        var request = _httpContextAccessor.HttpContext.Request;
-        var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
-        return baseUrl;
+        if (_httpContextAccessor?.HttpContext?.Request != null)
+        {
+            var request = _httpContextAccessor?.HttpContext?.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}{request.PathBase}";
+            return baseUrl;
+        }
+
+        return "http://192.168.0.15:5001";
     }
 }
